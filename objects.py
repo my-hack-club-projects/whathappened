@@ -47,7 +47,7 @@ class ArticleList:
         return self.headlines
     
     def summarize(self):
-        summarizer = Summarizer('\n'.join(self.headlines))
+        summarizer = Summarizer('\n'.join(self.headlines), 10)
         return summarizer.summarize()
     
     def __str__(self):
@@ -57,8 +57,9 @@ class ArticleList:
         return colorama.Fore.YELLOW + title + colorama.Fore.RESET + '\n' + headlines
     
 class Summarizer:
-    def __init__(self, text):
+    def __init__(self, text, size):
         self.text = text
+        self.size = size
 
     def get_documents(self):
         if Path('bbc/politics').exists():
@@ -89,6 +90,6 @@ class Summarizer:
 
         sentences = [sentence for sentence in self.text.split('\n') if '?' not in sentence]
 
-        summary = lxr.get_summary(sentences, summary_size=10, threshold=None)
+        summary = lxr.get_summary(sentences, summary_size=self.size, threshold=None)
 
         return '. '.join(summary)
