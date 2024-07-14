@@ -35,13 +35,35 @@ class ArticleList:
 
             if not headline_element: continue
             if not self.headline_is_valid(headline_title.text): continue
-            
+
             self.headlines.append(headline_title.text)
 
         return self.headlines
+    
+    def summarize(self):
+        summarizer = Summarizer('\n'.join(self.headlines))
+        return summarizer.summarize()
     
     def __str__(self):
         title = f"{len(self.headlines)} headlines from {self.name}"
         headlines = '\n'.join(self.headlines) if self.verbose else ''
 
         return colorama.Fore.YELLOW + title + colorama.Fore.RESET + '\n' + headlines
+    
+class Summarizer:
+    MAX_WORD_COUNT = 599
+    API_URL = "https://quillbot.com/api/summarizer/summarize-para/abs"
+    RATIO = 0.2
+
+    def __init__(self, text):
+        self.text = [text[i:i + self.MAX_WORD_COUNT] for i in range(0, len(text), self.MAX_WORD_COUNT)]
+
+    def summarize(self):
+        result = ""
+
+        for chunk in self.text:
+            response = requests.post(self.API_URL, json={'para': chunk, 'ratio': self.RATIO, 'type': 'abs'})
+            response.raise_for_status()
+            result += response.json()['data']['summary'] + '\n'
+
+        return result
