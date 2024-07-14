@@ -57,9 +57,6 @@ class ArticleList:
 class Summarizer:
     def __init__(self, text):
         self.text = text
-
-        nltk.download('stopwords', quiet=True)
-        nltk.download('punkt', quiet=True)
     
     def summarize(self):
         documents = []
