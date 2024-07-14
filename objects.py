@@ -8,6 +8,8 @@ from lexrank import LexRank
 from lexrank.mappings.stopwords import STOPWORDS
 from path import Path
 
+import zipfile
+
 ua = UserAgent()
 
 class ArticleList:
@@ -57,10 +59,27 @@ class ArticleList:
 class Summarizer:
     def __init__(self, text):
         self.text = text
+
+    def get_documents(self):
+        if Path('bbc/politics').exists():
+            print('Using cached dataset...')
+            return Path('bbc/politics')
+        
+        response = requests.get('http://mlg.ucd.ie/files/datasets/bbc-fulltext.zip')
+
+        with open('bbc-fulltext.zip', 'wb') as fp:
+            fp.write(response.content)
+
+        with zipfile.ZipFile('bbc-fulltext.zip', 'r') as zip_ref:
+            zip_ref.extractall()
+
+        Path('bbc-fulltext.zip').remove()
+
+        return Path('bbc/politics')
     
     def summarize(self):
         documents = []
-        documents_dir = Path('bbc/politics')
+        documents_dir = self.get_documents()
 
         for file_path in documents_dir.files('*.txt'):
             with file_path.open(mode='rt', encoding='utf-8') as fp:
@@ -70,6 +89,6 @@ class Summarizer:
 
         sentences = [sentence for sentence in self.text.split('\n') if '?' not in sentence]
 
-        summary = lxr.get_summary(sentences, summary_size=3, threshold=2)
+        summary = lxr.get_summary(sentences, summary_size=10, threshold=None)
 
         return '. '.join(summary)
