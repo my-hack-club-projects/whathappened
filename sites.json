@@ -3,6 +3,7 @@
         "url": "https://edition.cnn.com/",
         "name": "CNN",
         "headline_element_class": "container__link",
-        "headline_title_class": "container__headline-text"
+        "headline_title_class": "container__headline-text",
+        "minimum_length": 3
     }
 ]

@@ -12,10 +12,14 @@ class ArticleList:
         self.url = site_data['url']
         self.headline_element_class = site_data.get('headline_element_class', 'headline')
         self.headline_title_class = site_data.get('headline_title_class', 'headline-title')
+        self.minimum_length = site_data.get('minimum_length', 0)
 
         self.verbose = verbose
 
         self.headlines = []
+
+    def headline_is_valid(self, headline):
+        return len(headline.split()) >= self.minimum_length
 
     def get_soup(self):
         response = requests.get(self.url, headers={'User-Agent': ua.random})
@@ -28,8 +32,11 @@ class ArticleList:
 
         for headline_title in soup.select(f".{self.headline_title_class}"):
             headline_element = headline_title.find_parent(class_=self.headline_element_class)
-            if headline_element:
-                self.headlines.append(headline_title.text)
+
+            if not headline_element: continue
+            if not self.headline_is_valid(headline_title.text): continue
+            
+            self.headlines.append(headline_title.text)
 
         return self.headlines
     
@@ -37,4 +44,4 @@ class ArticleList:
         title = f"{len(self.headlines)} headlines from {self.name}"
         headlines = '\n'.join(self.headlines) if self.verbose else ''
 
-        return colorama.Fore.YELLOW + title + colorama.Fore.RESET + '\n' + headlines#
+        return colorama.Fore.YELLOW + title + colorama.Fore.RESET + '\n' + headlines
