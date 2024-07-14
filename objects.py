@@ -4,9 +4,9 @@ import colorama
 import requests
 import bs4
 
-import nltk 
-from nltk.corpus import stopwords 
-from nltk.tokenize import word_tokenize, sent_tokenize 
+from lexrank import LexRank
+from lexrank.mappings.stopwords import STOPWORDS
+from path import Path
 
 ua = UserAgent()
 
@@ -60,41 +60,19 @@ class Summarizer:
 
         nltk.download('stopwords', quiet=True)
         nltk.download('punkt', quiet=True)
-
+    
     def summarize(self):
-        stopWords = set(stopwords.words("english")) 
-        words = word_tokenize(self.text) 
+        documents = []
+        documents_dir = Path('bbc/politics')
 
-        freqTable = dict() 
-        for word in words: 
-            word = word.lower() 
-            if word in stopWords: 
-                continue
-            if word in freqTable: 
-                freqTable[word] += 1
-            else:
-                freqTable[word] = 1
+        for file_path in documents_dir.files('*.txt'):
+            with file_path.open(mode='rt', encoding='utf-8') as fp:
+                documents.append(fp.readlines())
 
-        sentences = sent_tokenize(self.text)
-        sentenceValue = dict() 
-        
-        for sentence in sentences: 
-            for word, freq in freqTable.items(): 
-                if word in sentence.lower(): 
-                    if sentence in sentenceValue: 
-                        sentenceValue[sentence] += freq 
-                    else: 
-                        sentenceValue[sentence] = freq 
-        
-        sumValues = 0
-        for sentence in sentenceValue: 
-            sumValues += sentenceValue[sentence] 
-        
-        average = int(sumValues / len(sentenceValue)) 
-        
-        summary = '' 
-        for sentence in sentences: 
-            if (sentence in sentenceValue) and (sentenceValue[sentence] > (1.2 * average)): 
-                summary += " " + sentence 
+        lxr = LexRank(documents, stopwords=STOPWORDS['en'])
 
-        return summary
+        sentences = [sentence for sentence in self.text.split('\n') if '?' not in sentence]
+
+        summary = lxr.get_summary(sentences, summary_size=3, threshold=2)
+
+        return '. '.join(summary)
