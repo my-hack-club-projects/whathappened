@@ -63,7 +63,7 @@ class Summarizer:
 
     def get_documents(self):
         if Path('bbc/politics').exists():
-            print('Using cached dataset...')
+            print(colorama.Fore.BLUE + "Using cached dataset..." + colorama.Fore.RESET)
             return Path('bbc/politics')
         
         response = requests.get('http://mlg.ucd.ie/files/datasets/bbc-fulltext.zip')

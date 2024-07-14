@@ -21,8 +21,12 @@ def main():
         article_lists.append(article_list)
 
     print(colorama.Fore.GREEN + "Done scraping!" + colorama.Fore.RESET)
-    print(colorama.Fore.BLUE + "Summarize all headlines?" + colorama.Fore.RESET)
-    summarize = input("y/n: ").lower().strip().startswith('y')
+
+    summarize = not verbose
+
+    if verbose:
+        print(colorama.Fore.BLUE + "Summarize all headlines?" + colorama.Fore.RESET)
+        summarize = input("y/n: ").lower().strip().startswith('y')
 
     if not summarize:
         print(colorama.Fore.GREEN + "Exiting..." + colorama.Fore.RESET)
